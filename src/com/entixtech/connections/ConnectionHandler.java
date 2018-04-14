@@ -2,6 +2,7 @@ package com.entixtech.connections;
 
 import com.entixtech.parsers.Response;
 import com.entixtech.parsers.ResponseParser;
+import com.entixtech.parsers.ResponseType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,8 +21,6 @@ public class ConnectionHandler extends AbstractInputHandler {
     private BufferedReader input;
     private String serverIP;
     private int port;
-    private boolean isConnected;
-    private boolean inError; // used if an exception crashed the object to indicate a new connections has to be made
     private boolean isLoggedIn;
     private ResponseParser responseParser;
 
@@ -33,8 +32,8 @@ public class ConnectionHandler extends AbstractInputHandler {
         this.serverIP = serverIP;
         this.port = port;
         isLoggedIn = false;
-        isConnected = false;
-        inError = false;
+        connected = false;
+        alive = false;
         connect();
     }
 
@@ -47,10 +46,16 @@ public class ConnectionHandler extends AbstractInputHandler {
             connection = new Socket(serverIP, port); // connect with server using the IP + port from the instance
             input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             output = new PrintWriter(connection.getOutputStream(), true);
+            connected = true;
+            setChanged();
+            notifyObservers(responseParser.parseServerResponse("OK"));
         } catch (IOException e) {
-            inError = true;
+            setChanged();
+            notifyObservers(responseParser.parseServerResponse(
+                    "ERR could not connect to this ip & port combination: " +
+                            serverIP + ", " + port));
+            connected = false;
         }
-        isConnected = true;
     }
 
     /**
@@ -59,52 +64,15 @@ public class ConnectionHandler extends AbstractInputHandler {
      */
     public void disconnect() throws IOException
     {
-        isConnected = false;
+        connected = false;
+        alive = false;
         sendCommandToServer("disconnect"); // disconnect from server
         try {
             connection.close(); // close socket
         } catch (IOException e) {
-            inError = true;
+            alive = false;
         }
     }
-
-    public void login(String username) {
-        isLoggedIn = true;
-        sendCommandToServer("login " + username);
-    }
-
-    public void getGameList() {
-        sendCommandToServer("get gamelist");
-    }
-
-    public void getPlayerList() {
-        sendCommandToServer("get playerlist");
-    }
-
-    public void subscribe(String gametype) {
-        sendCommandToServer("subscribe " + gametype);
-    }
-
-    /**
-     *
-     * @param move is nog onduidelijk
-     */
-    public void move(String move) {
-        sendCommandToServer("move " + move);
-    }
-
-    public void forfeit() {
-        sendCommandToServer("forfeit");
-    }
-
-    public void challenge(String player, String gametype) {
-        sendCommandToServer("challenge " + player + " " + gametype); // misschien moeten er nog "" om game type en player
-    }
-
-    public void acceptChallenge(int challengeNumber) {
-        sendCommandToServer("challenge accept " + challengeNumber);
-    }
-
 
     /**
      * Receives a command and sends this to the specified server.
@@ -137,6 +105,11 @@ public class ConnectionHandler extends AbstractInputHandler {
         sendCommandToServer(s);
     }
 
+    @Override
+    public void sendMessage(Object o) {
+
+    }
+
     /**
      * inner class that is used to listen to the server the connections handler is connected to
      * responds to the registered client with update functions according to the type of respond of the server
@@ -148,12 +121,13 @@ public class ConnectionHandler extends AbstractInputHandler {
             try {
                 String line;
                 while ((line = input.readLine()) != null) {
-                    Response response = responseParser.parseServerResponse(line);
-                    System.out.println(response);
-                    notifyObservers(response);
+//                    Response response = responseParser.parseServerResponse(line);
+//                    System.out.println(response);
+                    setChanged();
+                    notifyObservers(responseParser.parseServerResponse(line));
                 }
             } catch (IOException i) { // IOException can happen due to the readline function
-                i.printStackTrace(); // TODO use a logger to log exceptions
+                connected = false;
             }
         }
     }

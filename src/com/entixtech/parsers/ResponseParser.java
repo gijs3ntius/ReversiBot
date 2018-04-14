@@ -43,7 +43,7 @@ public class ResponseParser {
             if (response.equals("ERR")) {
                 Response r = new Response(ResponseType.ERROR);
                 HashMap<String, String> tempMap = new HashMap<>();
-                tempMap.put("error", responseLine.replace("ERR", ""));
+                tempMap.put("error", responseLine.replace("ERR ", ""));
                 r.setMap(tempMap);
                 return r;
             }
@@ -101,10 +101,20 @@ public class ResponseParser {
         return new Response(ResponseType.NONE);
     }
 
-    public Response parseCommandLineResponse(String rawInput) {
+    public Response parseStringResponse(String rawInput) {
         String[] input = rawInput.split(" ");
+        if (input.length > 0 && input[0].equals("exit")) {
+            return new Response(ResponseType.EXIT, new String[0]);
+        }
+        if (input.length > 0 && input[0].equals("help")) {
+            return new Response(ResponseType.HELP, new String[0]);
+        }
         if (input.length > 2 && input[0].equals("connect")) {
             return new Response(ResponseType.CONNECT, Arrays.copyOfRange(input, 1, input.length));
+        }
+        if (input.length > 1 && input[0].equals("mode")) {
+            if (input[1].equals("tournament")) return new Response(ResponseType.TOURNAMENT_MODE, new String[0]);
+            else if (input[1].equals("manual")) return new Response(ResponseType.MANUAL_MODE, new String[0]);
         }
         if (input.length > 1 && input[0].equals("login")) {
             return new Response(ResponseType.LOGIN, Arrays.copyOfRange(input, 1, input.length));
@@ -113,12 +123,13 @@ public class ResponseParser {
             return new Response(ResponseType.MOVE, Arrays.copyOfRange(input, 1, input.length));
         }
         if (input.length > 2 && input[0].equals("challenge")) {
-            return new Response(ResponseType.LOGIN, Arrays.copyOfRange(input, 1, input.length));
+            return new Response(ResponseType.CHALLENGE_SEND, Arrays.copyOfRange(input, 1, input.length));
         }
-        if (input[0].equals("get")) {
-            if (input.length > 1 && input[1].equals("gamelist")) return new Response(ResponseType.GAME_LIST, Arrays.copyOfRange(input, 1, input.length));
-            else if (input.length > 1 && input[1].equals("playerlist")) return new Response(ResponseType.PLAYER_LIST, Arrays.copyOfRange(input, 1, input.length));
+        if (input.length > 1 && input[0].equals("get")) {
+            if (input[1].equals("gamelist")) return new Response(ResponseType.GAME_LIST, Arrays.copyOfRange(input, 1, input.length));
+            else if (input[1].equals("playerlist")) return new Response(ResponseType.PLAYER_LIST, Arrays.copyOfRange(input, 1, input.length));
         }
+        if (input.length > 3 && input[0].equals("match")) return new Response(ResponseType.MATCH, Arrays.copyOfRange(input, 1, input.length));
         return new Response(ResponseType.NONE);
     }
 

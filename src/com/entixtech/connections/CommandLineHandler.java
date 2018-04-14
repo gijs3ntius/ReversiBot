@@ -1,11 +1,12 @@
 package com.entixtech.connections;
 
+import com.entixtech.core.Game;
+import com.entixtech.helpers.ReversiGameHelper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -15,9 +16,8 @@ public class CommandLineHandler extends AbstractInputHandler {
     private BufferedReader input;
     private ExecutorService threadPool;
 
-    public CommandLineHandler(Observer observer) {
+    public CommandLineHandler() {
         threadPool = newFixedThreadPool(2);
-        addObserver(observer);
         input = new BufferedReader(new InputStreamReader(System.in));
         output = new PrintWriter(System.out, true);
     }
@@ -32,13 +32,26 @@ public class CommandLineHandler extends AbstractInputHandler {
         try {
             input.close(); // close socket
         } catch (IOException e) {
-            e.printStackTrace();
+            alive = false;
         }
     }
 
     @Override
     public void startSending(String s) {
         threadPool.submit(() -> output.println(s));
+    }
+
+    @Override
+    public void sendMessage(Object o) {
+        if (o instanceof Game) {
+            if (((Game) o).isFinished()) {
+                System.out.println("Player who won the game is: " + (((Game) o).whoWon() == ReversiGameHelper.BLACK ? "black" : "white"));
+            } else {
+                System.out.println(o);
+            }
+        } else {
+            System.out.println(o); // fot the command line simply print everything else then game updates
+        }
     }
 
     private class CommandLineResponseListener implements Runnable {
@@ -52,7 +65,7 @@ public class CommandLineHandler extends AbstractInputHandler {
                     notifyObservers(line);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                connected = false;
             }
         }
     }

@@ -1,4 +1,6 @@
-package com.entixtech.core;
+package com.entixtech.helpers;
+
+import com.entixtech.core.BoardSpot;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +13,8 @@ public class ReversiGameHelper {
 
     public static final int WHITE = 0; // TODO change player computer to black white
     public static final int BLACK = 1;
-    public  static final int EMPTY = 2;
+    public static final int EMPTY = 2;
+    public static final int MAX_ALGO_RUNTIME = 9000000;
 
     private int[][] weightedBoardA = {
             {100, -1, 5, 2, 2, 5, -1, 100},
@@ -53,13 +56,27 @@ public class ReversiGameHelper {
         return cornerWeightUpdate(currentBoard);
     }
 
+    public boolean isValidMove(int[][] board, int colour, int move) {
+        for (BoardSpot spot : findCheckedPossibleMoves(colour, board)) {
+            if (spot.row*8 + spot.col == move) return true;
+        }
+        return false;
+    }
+
+    public int[] getValidMoves(int colour, int[][] board) {
+        List<BoardSpot> moves = findCheckedPossibleMoves(colour, board);
+        int[] moveArray = new int[moves.size()];
+        for (int i=0;i<moves.size();i++) moveArray[i] = moves.get(i).row*8 + moves.get(i).col;
+        return moveArray;
+    }
+
     /**
      * function that turns negative corner values in positive ones when the corner is taken
      * @param currentBoard the current state of the play board
      * @return a weighted board with adjusted values according to the game state
      */
     private int[][] cornerWeightUpdate(int[][] currentBoard) {
-        int[][] newWeightedBoard = copyCurrentBoard(weightedBoardA);
+        int[][] newWeightedBoard = copyCurrentBoard(weightedBoardB);
         if (currentBoard[0][0] != EMPTY) {
             newWeightedBoard[0][1] = abs(newWeightedBoard[0][1]);
             newWeightedBoard[1][0] = abs(newWeightedBoard[1][0]);
@@ -129,7 +146,7 @@ public class ReversiGameHelper {
         long startTime = System.currentTimeMillis();
         BoardSpot bestMove = findBestMove(board, colour, 10, startTime); // > recursive steps cause slower execution!
         long endTime = System.currentTimeMillis();
-        System.out.println((endTime-startTime)/1000);
+//        System.out.println((endTime-startTime)/1000); print for development
         if (bestMove != null)
             return bestMove.row*8 + bestMove.col;
         else return -1; // no possible move to make
@@ -373,7 +390,6 @@ public class ReversiGameHelper {
         for (BoardSpot move : findCheckedPossibleMoves(colour, board)) {
             int[][] updatedBoard = getUpdatedBoard(board, calcMove(move), colour);
             int tempValue = findDirectValue(move, updatedBoard) + findIndirectValue(recursiveSteps, time, colour, updatedBoard);
-            System.out.println(tempValue);
             if (tempValue > value) {
                 bestMove = move;
                 value = tempValue;
@@ -387,7 +403,7 @@ public class ReversiGameHelper {
     }
 
     private int findIndirectValue(int steps, long time, int colour, int[][] board) {
-        if (steps < 1 || System.currentTimeMillis() - time > 9000000) {
+        if (steps < 1 || System.currentTimeMillis() - time > MAX_ALGO_RUNTIME) {
             double inDirectValue = 0;
             List<BoardSpot> moves = findCheckedPossibleMoves(getOppositeColour(colour), board);
             for (BoardSpot opponentMove : moves) {
