@@ -2,6 +2,8 @@ package com.entixtech.connections;
 
 import com.entixtech.core.Game;
 import com.entixtech.helpers.ReversiGameHelper;
+import com.entixtech.parsers.Response;
+import com.entixtech.parsers.ResponseType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,9 +45,9 @@ public class CommandLineHandler extends AbstractInputHandler {
 
     @Override
     public void sendMessage(Object o) {
-        if (o instanceof Game) {
-            if (((Game) o).isFinished()) {
-                System.out.println("Player who won the game is: " + (((Game) o).whoWon() == ReversiGameHelper.BLACK ? "black" : "white"));
+        if (o instanceof Response) {
+            if (((Response) o).getType() == ResponseType.FINISHED) {
+                System.out.println("Player who won the game is: " + ((Response) o).getCommandValue()[0]);
             } else {
                 System.out.println(o);
             }

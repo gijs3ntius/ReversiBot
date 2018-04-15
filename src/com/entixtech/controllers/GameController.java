@@ -18,6 +18,8 @@ public class GameController extends AbstractController {
     private boolean loggedIn;
     private String username = null;
     private boolean tournamentMode = false;
+    private boolean inServerGame = false;
+    private boolean inLocalGame = true;
 
     /**
      * Core class of the game application
@@ -66,15 +68,14 @@ public class GameController extends AbstractController {
             }
         } else if (o instanceof Game) {
             if (arg instanceof Integer) {
-                if (connected) connectionHandler.startSending("move " + (int) arg); // first check if connected
+                if (connected && inServerGame) connectionHandler.startSending("move " + (int) arg); // first check if connected
 //                else game.switchPlayer(); // if not connected just switch player
             }
-            if (arg instanceof Game) {
+            if (arg instanceof Game || arg instanceof String) {
                 interfaceHandler.sendMessage(arg);
             }
-            if (arg instanceof String) {
-//                String[] response = ((String) arg).split(" ", 2);
-                interfaceHandler.sendMessage(arg);
+            if (arg instanceof Response) {
+                handleCommand((Response) arg);
             }
         }
     }
@@ -89,9 +90,18 @@ public class GameController extends AbstractController {
             case CONFIRM:
                 interfaceHandler.sendMessage("Operation successful");
                 break; // confirms a message send to the server
-            case WIN: break; // server indicated the player or computer has won
-            case LOSS: break; // server indicated the player or computer has lost
-            case DRAW: break; // server indicated the game ended in a draw
+            case WIN:
+                interfaceHandler.sendMessage("We won the game");
+                inServerGame = false;
+                break; // server indicated the player or computer has won
+            case LOSS:
+                interfaceHandler.sendMessage("We lost the game");
+                inServerGame = false;
+                break; // server indicated the player or computer has lost
+            case DRAW:
+                interfaceHandler.sendMessage("The game ended in a draw");
+                inServerGame = false;
+                break; // server indicated the game ended in a draw
             case YOUR_TURN:
                 break; // server indicated it is our turn
             case PLAYER_LIST:
@@ -103,14 +113,21 @@ public class GameController extends AbstractController {
                 }
                 break; // server responds with a move done by us or the opponent
             case MATCH:
-                // TODO build the right game object
                 if (tournamentMode) {
                     if (response.getMap().get("PLAYERTOMOVE").equals(username)) { // our turn to begin
-                        game = GameFactory.createAIvsHumanGame(this); // here the ai starts
+                        game = GameFactory.createAIvsServerGame(this); // here the ai starts
                     } else { // if we do not begin with playing
-                        game = GameFactory.createHumanvsAiGame(this); // human starts playing
+                        game = GameFactory.createServervsAIGame(this); // human starts playing
                     }
-                } else game = GameFactory.createHumanvsHumanGame(this); // manual play
+                } else {
+                    if (response.getMap().get("PLAYERTOMOVE").equals(username)) {
+                        game = GameFactory.createHumanvsServerGame(this); // manual play
+                        inServerGame = true;
+                    } else {
+                        game = GameFactory.createServervsHumanGame(this); // manual play
+                        inServerGame = true;
+                    }
+                }
                 break; // server indicates that a match is started and has information about it
             case GAME_LIST:
                 interfaceHandler.sendMessage(response.getList());
@@ -119,6 +136,7 @@ public class GameController extends AbstractController {
             case CHALLENGE_RECEIVED:
                 if (tournamentMode) {
                     connectionHandler.startSending("challenge accept " + response.getMap().get("CHALLENGENUMBER"));
+                    inServerGame = true;
                 } else {
                     interfaceHandler.sendMessage(response); // send the response to the interface and let the user decide
                 }
@@ -134,16 +152,30 @@ public class GameController extends AbstractController {
                 "get gamelist\n" +
                 "challenge 'game type' 'player name'\t (when connected with a game server)\n" +
                 "mode tournament\n" +
-                "mode manual";
+                "mode manual\n" +
+                "exit";
     }
 
     private void handleCommand(Response command) {
         switch (command.getResponseType()) {
+            case FINISHED:
+                interfaceHandler.sendMessage("Game over! player playing with colour " + command.getCommandValue()[0] + " won");
+                inLocalGame = false;
+                break;
             case EXIT:
+                if (inServerGame) {
+                    connectionHandler.startSending("forfeit");
+                    game.stopGame();
+                    break;
+                }
+                if (inLocalGame) {
+                    game.stopGame();
+                    break;
+                }
                 if (connected) connectionHandler.stopReading();
                 interfaceHandler.sendMessage("Good bye!");
                 System.exit(0);
-                break; // shutdown the application
+                break; // shutdown the application if the command was send while not in a game
             case TOURNAMENT_MODE:
                 tournamentMode = true;
                 if (connected && loggedIn) {
@@ -166,7 +198,10 @@ public class GameController extends AbstractController {
                 else interfaceHandler.sendMessage("Not connected! try connect 'ip' 'port' first");
                 break;
             case CHALLENGE_ACCEPT:
-                if (connected && loggedIn) connectionHandler.startSending("challenge accept " + command.getCommandValue()[0]);
+                if (connected && loggedIn) {
+                    connectionHandler.startSending("challenge accept " + command.getCommandValue()[0]);
+                    inServerGame = true;
+                }
                 break;
             case CONNECT:
                 if (connected) connectionHandler.stopReading();
@@ -186,7 +221,7 @@ public class GameController extends AbstractController {
                         '"' + command.getCommandValue()[1] + '"');
                 break;
             case MOVE:
-                if (connected && loggedIn) connectionHandler.startSending("move " + command.getCommandValue()[0]);
+                if (connected && loggedIn && inServerGame) connectionHandler.startSending("move " + command.getCommandValue()[0]);
                 else game.setMove(Integer.parseInt(command.getCommandValue()[0]));
                 break;
             case MATCH:
@@ -198,6 +233,7 @@ public class GameController extends AbstractController {
                         if (command.getCommandValue()[2].equals("human")) game = GameFactory.createHumanvsHumanGame(this);
                         if (command.getCommandValue()[2].equals("ai")) game = GameFactory.createHumanvsAiGame(this);
                     }
+                    inLocalGame = false;
                 }
                 break;
             case NONE:

@@ -16,4 +16,17 @@ public class GameFactory {
     public static AbstractGame createHumanvsHumanGame(Observer o) {
         return new ReversiGame(false, false, o);
     }
+
+    public static AbstractGame createServervsAIGame(Observer o) {
+        return new ReversiGame(false, true, o, false);
+    }
+    public static AbstractGame createServervsHumanGame(Observer o) {
+        return new ReversiGame(false, false, o, false);
+    }
+    public static AbstractGame createHumanvsServerGame(Observer o) {
+        return new ReversiGame(false, false, o, true);
+    }
+    public static AbstractGame createAIvsServerGame(Observer o) {
+        return new ReversiGame(true, false, o, true);
+    }
 }

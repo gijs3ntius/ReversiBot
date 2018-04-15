@@ -9,11 +9,8 @@ import java.util.Random;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Math.abs;
 
-public class ReversiGameHelper {
+public class ReversiGameHelper implements GameHelper {
 
-    public static final int WHITE = 0; // TODO change player computer to black white
-    public static final int BLACK = 1;
-    public static final int EMPTY = 2;
     public static final int MAX_ALGO_RUNTIME = 9000000;
 
     private int[][] weightedBoardA = {
@@ -56,6 +53,7 @@ public class ReversiGameHelper {
         return cornerWeightUpdate(currentBoard);
     }
 
+    @Override
     public boolean isValidMove(int[][] board, int colour, int move) {
         for (BoardSpot spot : findCheckedPossibleMoves(colour, board)) {
             if (spot.row*8 + spot.col == move) return true;
@@ -63,6 +61,7 @@ public class ReversiGameHelper {
         return false;
     }
 
+    @Override
     public int[] getValidMoves(int colour, int[][] board) {
         List<BoardSpot> moves = findCheckedPossibleMoves(colour, board);
         int[] moveArray = new int[moves.size()];
@@ -113,6 +112,7 @@ public class ReversiGameHelper {
      * @return integer representing the board location to choose next
      * if no location is left return -1
      */
+    @Override
     public int getNextMove(int[][] board, int colour) {
 //        BoardSpot bestMove = findBestMove(board, WHITE);
         BoardSpot bestMove = findBestMove(board, colour);
@@ -126,6 +126,7 @@ public class ReversiGameHelper {
      * @return integer representing the board location to choose next
      * if no location is left return -1
      */
+    @Override
     public int getNextMoveRandom(int[][] board, int colour) {
         List<BoardSpot> validMoves = findCheckedPossibleMoves(colour, board);
         if (validMoves.size() > 0) {
@@ -141,6 +142,7 @@ public class ReversiGameHelper {
      * @return integer representing the board location to choose next
      * if no location is left return -1
      */
+    @Override
     public int getNextMoveRecursive(int[][] board, int colour) {
 //        BoardSpot bestMove = findBestMove(board, colour);
         long startTime = System.currentTimeMillis();
@@ -157,6 +159,7 @@ public class ReversiGameHelper {
      * @param colour is player or computer
      * @return all possible moves for a colour and a board state
      */
+    @Override
     public List<BoardSpot> findCheckedPossibleMoves(int colour, int[][] board) {
         List<BoardSpot> checkedMoves = new LinkedList<>();
         for (int row=0;row<8;row++) {
@@ -438,10 +441,12 @@ public class ReversiGameHelper {
         return move.row * 8 + move.col;
     }
 
+    @Override
     public int getOppositeColour(int colour) {
         return colour == WHITE ? BLACK : WHITE;
     }
 
+    @Override
     public int[][] getUpdatedBoard(int[][] board, int move, int colour) {
         BoardSpot temp = new BoardSpot(move/8, move%8);
         int[][] updatedBoard = copyCurrentBoard(board);
@@ -572,6 +577,7 @@ public class ReversiGameHelper {
         }
     }
 
+    @Override
     public int[][] getNewBoard() {
         return new int[][]{
                 {2,2,2,2,2,2,2,2},
@@ -602,29 +608,12 @@ public class ReversiGameHelper {
         return (int) total/possibleMoves.size();
     }
 
-    public static void printBoard(int[][] board)
-    {
-        StringBuilder result = new StringBuilder();
-        for (int[] aBoard : board) {
-            for (int anABoard : aBoard) {
-                if (anABoard == 0) {
-                    result.append('O');
-                } else if (anABoard == 1) {
-                    result.append('X');
-                } else {
-                    result.append("*");
-                }
-            }
-            result.append("\n");
-        }
-        System.out.println(result.toString());
-    }
-
     /**
      * Function that returns which side won, or a draw
      * @param board the play board
      * @return integer representing the player who won
      */
+    @Override
     public int whoWon(int[][] board) {
         int totalWhite = getScore(board, WHITE);
         int totalBlack = getScore(board, BLACK);
@@ -638,6 +627,7 @@ public class ReversiGameHelper {
      * @param colour the side which score needs to be counted
      * @return an integer representing the score of a colour
      */
+    @Override
     public int getScore(int[][] board, int colour) {
         int totalWhite = 0;
         int totalBlack = 0;

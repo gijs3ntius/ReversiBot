@@ -1,14 +1,19 @@
 package com.entixtech.core;
 
+import com.entixtech.helpers.GameHelper;
 import com.entixtech.helpers.ReversiGameHelper;
+import com.entixtech.parsers.Response;
+import com.entixtech.parsers.ResponseType;
+
 import java.util.Arrays;
 import java.util.Observer;
 
 //TODO fix the two errors regarding games finished and server connection with local games (see screen shots)
 public class ReversiGame extends AbstractGame {
     private int[][] currentBoard;
-    private ReversiGameHelper helper;
+    private GameHelper helper;
     private int playingSide;
+    private boolean started; // used when in a serverGame
     private Player player1;
     private Player player2;
 
@@ -19,7 +24,7 @@ public class ReversiGame extends AbstractGame {
      */
     ReversiGame(boolean player1Auto, boolean player2Auto) {
         this.gameName = "Reversi";
-        helper = new ReversiGameHelper();
+        helper = new ReversiGameHelper(); // this could be any game helper corresponding to the game played
         currentBoard = helper.getNewBoard();
         player1 = new Player(player1Auto, ReversiGameHelper.WHITE);
         player2 = new Player(player2Auto, ReversiGameHelper.BLACK);
@@ -49,10 +54,31 @@ public class ReversiGame extends AbstractGame {
         setGameType(gameType);
     }
 
+    ReversiGame(boolean player1Auto, boolean player2Auto, Observer o, boolean started) {
+        this(player1Auto, player2Auto, o, GameType.SERVER);
+        this.started = started;
+    }
+
     public void yourTurn() {
-        setChanged();
-        notifyObservers("It is your turn! choose one of the following moves: "
-                + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
+        if (gameType == GameType.SERVER) {
+            if (playingSide == GameHelper.BLACK) {
+                if (!player2.isAuto() && !started) {
+                    setChanged();
+                    notifyObservers("It is your turn! choose one of the following moves: "
+                            + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
+                }
+            } else {
+                if (!player1.isAuto() && started) {
+                    setChanged();
+                    notifyObservers("It is your turn! choose one of the following moves: "
+                            + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
+                }
+            }
+        } else {
+            setChanged();
+            notifyObservers("It is your turn! choose one of the following moves: "
+                    + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
+        }
     }
 
     @Override
@@ -62,52 +88,63 @@ public class ReversiGame extends AbstractGame {
 
     @Override
     public void setMove(int move) {
-        if (helper.isValidMove(currentBoard, playingSide, move)) {
-            currentBoard = helper.getUpdatedBoard(currentBoard, move, playingSide);
-            setChanged();
-            notifyObservers(this);
-            if (!isFinished()) {
-                switchPlayer();
-                if (getCurrentPlayer().isAuto()) {
-                    playMoveAuto();
+        if (runnning) {
+            if (helper.isValidMove(currentBoard, playingSide, move)) {
+                currentBoard = helper.getUpdatedBoard(currentBoard, move, playingSide);
+                setChanged();
+                notifyObservers(this);
+                if (!isFinished()) {
+                    switchPlayer();
+                    if (getCurrentPlayer().isAuto()) {
+                        playMoveAuto();
+                    }
+                } else {
+                    setChanged();
+                    String[] won = whoWon() == GameHelper.WHITE ? new String[]{"White"} : new String[]{"Black"};
+                    notifyObservers(new Response(ResponseType.FINISHED, won));
                 }
             } else {
                 setChanged();
-                notifyObservers(this);
+                notifyObservers("This is not a valid move please try again one of the following: "
+                        + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
             }
-        } else {
-            setChanged();
-            notifyObservers("This is not a valid move please try again one of the following: "
-                    + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
         }
     }
 
     private void playMoveAuto() {
-        int nextMove = helper.getNextMove(currentBoard, playingSide);
-        if (nextMove != -1) {
-            currentBoard = helper.getUpdatedBoard(currentBoard, nextMove, playingSide);
-            setChanged();
-            notifyObservers(nextMove);
-            setChanged();
-            notifyObservers(this); // check if setChanged() should be called once, twice or not at all
-            switchPlayer();
-        } else {
-            switchPlayer();
+        if (runnning) {
+            if (!isFinished()) {
+                int nextMove = helper.getNextMove(currentBoard, playingSide); // returns -1 if it cannot find another move
+                if (nextMove != -1) {
+                    currentBoard = helper.getUpdatedBoard(currentBoard, nextMove, playingSide);
+                    setChanged();
+                    notifyObservers(nextMove);
+                    setChanged();
+                    notifyObservers(this); // check if setChanged() should be called once, twice or not at all
+                    switchPlayer();
+                } else {
+                    switchPlayer();
+                }
+            } else {
+                setChanged();
+                String[] won = whoWon() == GameHelper.WHITE ? new String[]{"White"} : new String[]{"Black"};
+                notifyObservers(new Response(ResponseType.FINISHED, won));
+            }
         }
     }
 
     @Override
     public void switchPlayer() {
-        playingSide = helper.getOppositeColour(playingSide);
-        if (helper.getValidMoves(playingSide, currentBoard).length < 0) {
+        if (runnning) {
             playingSide = helper.getOppositeColour(playingSide);
-        }
-        if (getCurrentPlayer().isAuto()) { // TODO check if this fixes the problem with playing without server
-            playMoveAuto();
-        } else {
-            setChanged();
-            notifyObservers("It is your turn! choose one of the following moves: "
-                    + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
+            if (helper.getValidMoves(playingSide, currentBoard).length < 0) {
+                playingSide = helper.getOppositeColour(playingSide);
+            }
+            if (getCurrentPlayer().isAuto()) { // TODO check if this fixes the problem with playing without server
+                playMoveAuto();
+            } else {
+                yourTurn();
+            }
         }
     }
 
@@ -131,14 +168,14 @@ public class ReversiGame extends AbstractGame {
     }
 
     @Override
-    public String getName() {
+    public String getGameName() {
         return gameName;
     }
 
     @Override
     public boolean isFinished() {
-        if (helper.findCheckedPossibleMoves(playingSide, currentBoard).size() > 1) return false;
-        if (helper.findCheckedPossibleMoves(helper.getOppositeColour(playingSide), currentBoard).size() > 1) return false;
+        if (helper.findCheckedPossibleMoves(playingSide, currentBoard).size() > 0) return false;
+        if (helper.findCheckedPossibleMoves(helper.getOppositeColour(playingSide), currentBoard).size() > 0) return false;
         return true; // no moves left for both sides
     }
 
@@ -150,6 +187,17 @@ public class ReversiGame extends AbstractGame {
     @Override
     public int[][] getPlayBoard() {
         return currentBoard;
+    }
+
+    @Override
+    public void stopGame() {
+        runnning =false;
+        setChanged();
+        if (runnning) {
+            notifyObservers("Game stopped");
+        } else {
+            notifyObservers("Game was already stopped");
+        }
     }
 
     private Player getCurrentPlayer() {

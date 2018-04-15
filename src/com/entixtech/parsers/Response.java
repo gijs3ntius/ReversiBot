@@ -22,7 +22,7 @@ public class Response {
         list = null;
     }
 
-    Response (ResponseType type, String[] value) {
+    public Response(ResponseType type, String[] value) {
         messageType = MessageType.COMMAND;
         responseType = type;
         commandValue = value;
