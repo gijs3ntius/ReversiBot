@@ -165,6 +165,9 @@ public class GameController extends AbstractController {
                 }
                 else interfaceHandler.sendMessage("Not connected! try connect 'ip' 'port' first");
                 break;
+            case CHALLENGE_ACCEPT:
+                if (connected && loggedIn) connectionHandler.startSending("challenge accept " + command.getCommandValue()[0]);
+                break;
             case CONNECT:
                 if (connected) connectionHandler.stopReading();
                 else connect(command.getCommandValue()[0], Integer.parseInt(command.getCommandValue()[1]));

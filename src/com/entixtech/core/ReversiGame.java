@@ -4,6 +4,7 @@ import com.entixtech.helpers.ReversiGameHelper;
 import java.util.Arrays;
 import java.util.Observer;
 
+//TODO fix the two errors regarding games finished and server connection with local games (see screen shots)
 public class ReversiGame extends AbstractGame {
     private int[][] currentBoard;
     private ReversiGameHelper helper;
@@ -32,10 +33,12 @@ public class ReversiGame extends AbstractGame {
         notifyObservers("Game successfully started");
         setChanged();
         notifyObservers(this);
-        setChanged();
         if (!player1Auto) {
-            notifyObservers("It is your turn! choose one of the following moves: "
-                    + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
+            if (gameType == GameType.LOCAL) {
+                setChanged();
+                notifyObservers("It is your turn! choose one of the following moves: "
+                        + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
+            }
         } else {
             playMoveAuto(); // if it is a bot play a move to start the match
         }
@@ -44,6 +47,12 @@ public class ReversiGame extends AbstractGame {
     ReversiGame(boolean player1Auto, boolean player2Auto, Observer o, GameType gameType) {
         this(player1Auto, player2Auto, o);
         setGameType(gameType);
+    }
+
+    public void yourTurn() {
+        setChanged();
+        notifyObservers("It is your turn! choose one of the following moves: "
+                + Arrays.toString(helper.getValidMoves(playingSide, currentBoard)));
     }
 
     @Override
@@ -55,6 +64,8 @@ public class ReversiGame extends AbstractGame {
     public void setMove(int move) {
         if (helper.isValidMove(currentBoard, playingSide, move)) {
             currentBoard = helper.getUpdatedBoard(currentBoard, move, playingSide);
+            setChanged();
+            notifyObservers(this);
             if (!isFinished()) {
                 switchPlayer();
                 if (getCurrentPlayer().isAuto()) {

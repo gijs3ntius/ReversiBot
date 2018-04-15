@@ -123,7 +123,8 @@ public class ResponseParser {
             return new Response(ResponseType.MOVE, Arrays.copyOfRange(input, 1, input.length));
         }
         if (input.length > 2 && input[0].equals("challenge")) {
-            return new Response(ResponseType.CHALLENGE_SEND, Arrays.copyOfRange(input, 1, input.length));
+            if (input[1].equals("accept")) return new Response(ResponseType.CHALLENGE_ACCEPT, Arrays.copyOfRange(input, 2, input.length));
+            else return new Response(ResponseType.CHALLENGE_SEND, Arrays.copyOfRange(input, 1, input.length));
         }
         if (input.length > 1 && input[0].equals("get")) {
             if (input[1].equals("gamelist")) return new Response(ResponseType.GAME_LIST, Arrays.copyOfRange(input, 1, input.length));
