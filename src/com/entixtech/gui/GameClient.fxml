@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<BorderPane minHeight="500.0" minWidth="650.0" prefHeight="500.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUIHelpers.FxmlHandler">
+    <center>
+        <GridPane BorderPane.alignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <Button fx:id="game1" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btn1handle" prefHeight="80.0" prefWidth="100.0" text="Tic-tac-toe">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="game2" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btn2handle" prefHeight="80.0" prefWidth="100.0" text="Reversi" GridPane.columnIndex="1">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="game3" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="80.0" prefWidth="100.0" text="Game3" GridPane.columnIndex="2">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="game4" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="80.0" prefWidth="100.0" text="Game4" GridPane.rowIndex="1">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="game5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="80.0" prefWidth="100.0" text="Game5" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="game6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="80.0" prefWidth="100.0" text="Game6" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="game7" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="80.0" prefWidth="100.0" text="Game7" GridPane.rowIndex="2">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="game8" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="80.0" prefWidth="100.0" text="Game8" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+                <Button fx:id="game9" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="80.0" prefWidth="100.0" text="Game9" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                    <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </GridPane.margin>
+                </Button>
+            </children>
+        </GridPane>
+    </center>
+    <right>
+        <VBox BorderPane.alignment="CENTER">
+            <children>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="User list" textAlignment="CENTER" wrappingWidth="245.041015625" />
+                <ListView fx:id="listView" onMouseClicked="#changeSelectedUser" prefHeight="1080.0" />
+                <TextField fx:id="selectedUser" editable="false" prefHeight="25.0" prefWidth="195.0" text="No user selected" />
+            </children>
+        </VBox>
+    </right>
+    <top>
+        <AnchorPane prefHeight="106.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+            <children>
+                <Text fx:id="Title" layoutX="14.0" layoutY="63.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Games">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Text>
+                <TextField fx:id="selectedGame" editable="false" focusTraversable="false" layoutX="14.0" layoutY="80.0" prefHeight="25.0" prefWidth="360.0" text="No game selected" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="277.0" />
+                <MenuBar fx:id="menuBarHome" prefHeight="25.0" prefWidth="650.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <menus>
+                        <Menu fx:id="menuButtonHome" mnemonicParsing="false" text="File">
+                            <items>
+                                <MenuItem mnemonicParsing="false" text="Close" />
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+                <ChoiceBox fx:id="playAs" layoutX="457.0" layoutY="79.0" prefWidth="150.0" />
+                <Label layoutX="402.0" layoutY="79.0" prefHeight="26.0" prefWidth="80.0" text="Play as:" />
+            </children>
+        </AnchorPane>
+    </top>
+    <bottom>
+        <AnchorPane prefHeight="44.0" prefWidth="650.0" BorderPane.alignment="CENTER">
+            <children>
+                <Button fx:id="challengePlayer" mnemonicParsing="false" onAction="#sendAndChallengePlayer" text="Challenge" AnchorPane.rightAnchor="35.0" AnchorPane.topAnchor="10.0" />
+                <Button fx:id="createGame" mnemonicParsing="false" onAction="#playAgainstAi" text="Play with yourself" AnchorPane.rightAnchor="125.0" AnchorPane.topAnchor="10.0" />
+                <SplitMenuButton fx:id="pageSelector" contentDisplay="BOTTOM" layoutX="312.0" layoutY="10.0" mnemonicParsing="false" text="Page 1" AnchorPane.rightAnchor="262.0">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Page 1" />
+                        <MenuItem mnemonicParsing="false" text="Page 2" />
+                        <MenuItem mnemonicParsing="false" text="Page 3" />
+                    </items>
+                </SplitMenuButton>
+            </children>
+        </AnchorPane>
+    </bottom>
+</BorderPane>

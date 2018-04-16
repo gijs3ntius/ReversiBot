@@ -50,7 +50,11 @@ public class ReversiGameHelper implements GameHelper {
 
     private int[][] getWeightedBoard(int[][] currentBoard) {
         // TODO add mobility heuristic to bot
-        return cornerWeightUpdate(currentBoard);
+        return weightedBoardA;
+    }
+
+    private void setWeightedBoard(int[][] updatedBoard) {
+        weightedBoardA = updatedBoard;
     }
 
     @Override
@@ -69,13 +73,18 @@ public class ReversiGameHelper implements GameHelper {
         return moveArray;
     }
 
+    private boolean isACornerTaken(int[][] currentBoard) {
+        return currentBoard[0][0] != EMPTY || currentBoard[0][7] != EMPTY ||
+                currentBoard[7][0] != EMPTY || currentBoard[7][7] != EMPTY;
+    }
+
     /**
      * function that turns negative corner values in positive ones when the corner is taken
      * @param currentBoard the current state of the play board
      * @return a weighted board with adjusted values according to the game state
      */
     private int[][] cornerWeightUpdate(int[][] currentBoard) {
-        int[][] newWeightedBoard = copyCurrentBoard(weightedBoardB);
+        int[][] newWeightedBoard = copyCurrentBoard(weightedBoardA);
         if (currentBoard[0][0] != EMPTY) {
             newWeightedBoard[0][1] = abs(newWeightedBoard[0][1]);
             newWeightedBoard[1][0] = abs(newWeightedBoard[1][0]);
@@ -390,6 +399,9 @@ public class ReversiGameHelper implements GameHelper {
     private BoardSpot findBestMove(int[][] board, int colour, int recursiveSteps, long time) {
         BoardSpot bestMove = null;
         int value = -MAX_VALUE; // makes sure there is at least a move bigger than the value
+        if (isACornerTaken(board)) {
+            setWeightedBoard(cornerWeightUpdate(board));
+        }
         for (BoardSpot move : findCheckedPossibleMoves(colour, board)) {
             int[][] updatedBoard = getUpdatedBoard(board, calcMove(move), colour);
             int tempValue = findDirectValue(move, updatedBoard) + findIndirectValue(recursiveSteps, time, colour, updatedBoard);

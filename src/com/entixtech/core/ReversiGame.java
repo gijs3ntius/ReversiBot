@@ -114,7 +114,7 @@ public class ReversiGame extends AbstractGame {
     private void playMoveAuto() {
         if (runnning) {
             if (!isFinished()) {
-                int nextMove = helper.getNextMove(currentBoard, playingSide); // returns -1 if it cannot find another move
+                int nextMove = helper.getNextMoveRecursive(currentBoard, playingSide); // returns -1 if it cannot find another move
                 if (nextMove != -1) {
                     currentBoard = helper.getUpdatedBoard(currentBoard, nextMove, playingSide);
                     setChanged();

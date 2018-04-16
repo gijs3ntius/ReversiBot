@@ -167,15 +167,16 @@ public class GameController extends AbstractController {
                     connectionHandler.startSending("forfeit");
                     game.stopGame();
                     break;
-                }
-                if (inLocalGame) {
+                } else if (inLocalGame) {
                     game.stopGame();
                     break;
+                } else if (connected) {
+                    connectionHandler.stopReading();
+                } else {
+                    interfaceHandler.sendMessage("Good bye!");
+                    System.exit(0);
+                    break; // shutdown the application if the command was send while not in a game
                 }
-                if (connected) connectionHandler.stopReading();
-                interfaceHandler.sendMessage("Good bye!");
-                System.exit(0);
-                break; // shutdown the application if the command was send while not in a game
             case TOURNAMENT_MODE:
                 tournamentMode = true;
                 if (connected && loggedIn) {
