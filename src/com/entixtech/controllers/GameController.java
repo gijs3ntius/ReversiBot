@@ -224,7 +224,7 @@ public class GameController extends AbstractController {
                 if (connected && loggedIn && inServerGame) connectionHandler.startSending("move " + command.getCommandValue()[0]);
                 else game.setMove(Integer.parseInt(command.getCommandValue()[0]));
                 break;
-            case MATCH:
+            case LOCAL:
                 if (command.getCommandValue()[0].equals("reversi")) {
                     if (command.getCommandValue()[1].equals("ai")) {
                         if (command.getCommandValue()[2].equals("human")) game = GameFactory.createAIvsHumanGame(this);

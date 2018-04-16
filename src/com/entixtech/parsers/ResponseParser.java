@@ -130,7 +130,7 @@ public class ResponseParser {
             if (input[1].equals("gamelist")) return new Response(ResponseType.GAME_LIST, Arrays.copyOfRange(input, 1, input.length));
             else if (input[1].equals("playerlist")) return new Response(ResponseType.PLAYER_LIST, Arrays.copyOfRange(input, 1, input.length));
         }
-        if (input.length > 3 && input[0].equals("match")) return new Response(ResponseType.MATCH, Arrays.copyOfRange(input, 1, input.length));
+        if (input.length > 3 && input[0].equals("local")) return new Response(ResponseType.LOCAL, Arrays.copyOfRange(input, 1, input.length));
         return new Response(ResponseType.NONE);
     }
 

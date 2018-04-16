@@ -181,7 +181,7 @@ public class ReversiGame extends AbstractGame {
 
     @Override
     public int whoWon() {
-        return helper.whoWon(currentBoard);
+        return helper.getOppositeColour(helper.whoWon(currentBoard));
     }
 
     @Override
